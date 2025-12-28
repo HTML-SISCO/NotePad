@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sisco Notepad</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        :root {
+            --primary: #6366f1;
+            --secondary: #8b5cf6;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --dark: #1e293b;
+            --light: #f8fafc;
+        }
+
+        body {
+            background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 25%, #ec4899 50%, #f43f5e 75%, #0ea5e9 100%);
+            min-height: 100vh;
+            overflow-x: hidden;
+            color: var(--dark);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        header {
+            padding: 20px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            backdrop-filter: blur(12px);
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 0 0 24px 24px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 800;
+            font-size: 1.8rem;
+            color: white;
+        }
+
+        .auth-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 12px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: none;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-outline {
+            background: transparent;
+            color: white;
+            border: 2px solid white;
+        }
+
+        .btn-outline:hover {
+            background: white;
+            color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+        }
+
+        .btn-filled {
+            background: white;
+            color: var(--primary);
+            font-weight: 700;
+        }
+
+        .main-layout {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .main-layout {
+                grid-template-columns: 1fr;
+            }
+            header {
+                flex-direction: column;
+                gap: 16px;
+                text-align: center;
+            }
+        }
+
+        .sidebar {
+            background: white;
+            border-radius: 20px;
+            padding: 24px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .sidebar h3 {
+            font-size: 1.3rem;
+            color: var(--dark);
+            font-weight: 700;
+        }
+
+        .note-list {
+            list-style: none;
+        }
+
+        .note-item {
+            padding: 14px 16px;
+            margin-bottom: 10px;
+            border-radius: 14px;
+            background: #f8fafc;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-weight: 500;
+            color: #475569;
+        }
+
+        .note-item:hover {
+            background: #e2e8f0;
+            transform: translateX(4px);
+        }
+
+        .note-item.active {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            box-shadow: 0 4px 12px rgba(99, 102, 241, 0.3);
+        }
+
+        .new-note-btn {
+            width: 100%;
+            margin-top: 16px;
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: white;
+            font-weight: 600;
+        }
+
+        .editor-panel {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.15);
+        }
+
+        .editor-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+            gap: 16px;
+        }
+
+        #noteTitle {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--dark);
+            border: none;
+            outline: none;
+            background: transparent;
+            width: 70%;
+            min-width: 300px;
+        }
+
+        #noteTitle::placeholder {
+            color: #94a3b8;
+        }
+
+        .toolbar {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tool-btn {
+            width: 42px;
+            height: 42px;
+            border-radius: 12px;
+            background: #f1f5f9;
+            border: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            color: #475569;
+            transition: all 0.2s ease;
+        }
+
+        .tool-btn:hover {
+            background: #e2e8f0;
+            color: var(--primary);
+            transform: translateY(-2px);
+        }
+
+        .tool-btn.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ✅ CRITICAL: contenteditable styling */
+        #noteContent {
+            min-height: 500px;
+            font-size: 1.1rem;
+            line-height: 1.6;
+            padding: 20px;
+            border-radius: 16px;
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            outline: none;
+            overflow-y: auto;
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+
+        #noteContent:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+        }
+
+        /* Make formatting visible */
+        #noteContent b, #noteContent strong { font-weight: bold; }
+        #noteContent i, #noteContent em { font-style: italic; }
+        #noteContent u { text-decoration: underline; }
+        #noteContent ul {
+            margin-left: 20px;
+            padding-left: 10px;
+        }
+
+        .editor-footer {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+        }
+
+        /* Modals */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.6);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            visibility: hidden;
+            transition: opacity 0.3s ease;
+            pointer-events: none;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+        }
+
+        .modal {
+            background: white;
+            border-radius: 20px;
+            width: 90%;
+            max-width: 480px;
+            padding: 32px;
+            position: relative;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+        }
+
+        .modal-overlay.active .modal {
+            transform: translateY(0);
+        }
+
+        .close-modal {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: #f1f5f9;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            border: none;
+            font-size: 1.2rem;
+            cursor: pointer;
+            color: #64748b;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+        }
+
+        .switch-form {
+            text-align: center;
+            margin-top: 16px;
+            color: #64748b;
+        }
+
+        .switch-form a {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 600;
+            box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+            transform: translateX(150%);
+            transition: transform 0.3s ease;
+            z-index: 10001;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .toast.show {
+            transform: translateX(0);
+        }
+
+        .toast-success { background: linear-gradient(135deg, var(--success), #059669); }
+        .toast-info { background: linear-gradient(135deg, #3b82f6, #1d4ed8); }
+
+        .floating {
+            position: absolute;
+            border-radius: 50%;
+            opacity: 0.07;
+            z-index: -1;
+        }
+        .f1 { top: 10%; left: 5%; width: 200px; height: 200px; background: #ff6b6b; }
+        .f2 { top: 30%; right: 10%; width: 150px; height: 150px; background: #4ecdc4; }
+        .f3 { bottom: 20%; left: 15%; width: 180px; height: 180px; background: #a29bfe; }
+        .f4 { bottom: 40%; right: 20%; width: 120px; height: 120px; background: #feca57; }
+    </style>
+</head>
+<body>
+    <div class="floating f1"></div>
+    <div class="floating f2"></div>
+    <div class="floating f3"></div>
+    <div class="floating f4"></div>
+
+    <header>
+        <div class="container">
+            <div class="logo">
+                <i class="fas fa-palette"></i>
+                <span>Sisco Notepad</span>
+            </div>
+            <div class="auth-buttons">
+                <button id="loginBtn" class="btn btn-outline">
+                    <i class="fas fa-sign-in-alt"></i> Login
+                </button>
+                <button id="signupBtn" class="btn btn-filled">
+                    <i class="fas fa-user-plus"></i> Sign Up
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div class="main-layout">
+            <aside class="sidebar">
+                <div class="sidebar-header">
+                    <h3><i class="fas fa-sticky-note"></i> My Notes</h3>
+                    <span id="noteCount">3 notes</span>
+                </div>
+                <ul class="note-list" id="noteList"></ul>
+                <button id="newNoteBtn" class="btn btn-filled new-note-btn">
+                    <i class="fas fa-plus"></i> New Note
+                </button>
+            </aside>
+
+            <main class="editor-panel">
+                <div class="editor-header">
+                    <input type="text" id="noteTitle" placeholder="Note Title" />
+                    <div class="toolbar">
+                        <button class="tool-btn" id="boldBtn" title="Bold (Ctrl+B)"><i class="fas fa-bold"></i></button>
+                        <button class="tool-btn" id="italicBtn" title="Italic (Ctrl+I)"><i class="fas fa-italic"></i></button>
+                        <button class="tool-btn" id="underlineBtn" title="Underline (Ctrl+U)"><i class="fas fa-underline"></i></button>
+                        <button class="tool-btn" id="bulletBtn" title="Bullet List"><i class="fas fa-list-ul"></i></button>
+                        <button class="tool-btn" id="saveBtn" title="Save (Ctrl+S)"><i class="fas fa-save"></i></button>
+                    </div>
+                </div>
+                <!-- ✅ contenteditable div — formatting now WORKS -->
+                <div id="noteContent" contenteditable="true" placeholder="Start writing your colorful note here..."></div>
+                <div class="editor-footer">
+                    <span id="charCount">0 characters</span>
+                    <span id="lastSaved">Ready to write</span>
+                </div>
+            </main>
+        </div>
+    </div>
+
+    <!-- Modals -->
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal">
+            <button class="close-modal" id="closeLogin">&times;</button>
+            <div class="modal-header">
+                <h2><i class="fas fa-sign-in-alt"></i> Login</h2>
+                <p>Sign in to your account</p>
+            </div>
+            <form id="loginForm">
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="loginEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="loginPassword" placeholder="••••••••" required>
+                </div>
+                <button type="submit" class="btn btn-filled" style="width:100%;">Sign In</button>
+                <div class="switch-form">
+                    <p>Don’t have an account? <a href="#" id="switchToSignup">Sign Up</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="signupModal" class="modal-overlay">
+        <div class="modal">
+            <button class="close-modal" id="closeSignup">&times;</button>
+            <div class="modal-header">
+                <h2><i class="fas fa-user-plus"></i> Sign Up</h2>
+                <p>Create your free account</p>
+            </div>
+            <form id="signupForm">
+                <div class="form-group">
+                    <label>Full Name</label>
+                    <input type="text" id="signupName" placeholder="John Doe" required>
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="signupEmail" placeholder="you@example.com" required>
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="signupPassword" placeholder="At least 6 characters" required>
+                </div>
+                <button type="submit" class="btn btn-filled" style="width:100%;">Create Account</button>
+                <div class="switch-form">
+                    <p>Already have an account? <a href="#" id="switchToLogin">Log In</a></p>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div id="toast" class="toast">
+        <i class="fas fa-check-circle"></i>
+        <span id="toastMessage">Note saved!</span>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            // Elements
+            const loginBtn = document.getElementById('loginBtn');
+            const signupBtn = document.getElementById('signupBtn');
+            const loginModal = document.getElementById('loginModal');
+            const signupModal = document.getElementById('signupModal');
+            const closeLogin = document.getElementById('closeLogin');
+            const closeSignup = document.getElementById('closeSignup');
+            const switchToSignup = document.getElementById('switchToSignup');
+            const switchToLogin = document.getElementById('switchToLogin');
+            const loginForm = document.getElementById('loginForm');
+            const signupForm = document.getElementById('signupForm');
+            const noteList = document.getElementById('noteList');
+            const noteTitle = document.getElementById('noteTitle');
+            const noteContent = document.getElementById('noteContent'); // ✅ contenteditable div
+            const newNoteBtn = document.getElementById('newNoteBtn');
+            const boldBtn = document.getElementById('boldBtn');
+            const italicBtn = document.getElementById('italicBtn');
+            const underlineBtn = document.getElementById('underlineBtn');
+            const bulletBtn = document.getElementById('bulletBtn');
+            const saveBtn = document.getElementById('saveBtn');
+            const charCount = document.getElementById('charCount');
+            const lastSaved = document.getElementById('lastSaved');
+            const toast = document.getElementById('toast');
+            const toastMessage = document.getElementById('toastMessage');
+            const noteCountEl = document.getElementById('noteCount');
+
+            // Sample notes
+            let notes = [
+                { id: 1, title: 'Welcome Note', content: '<p>🎉 Welcome to <b>Sisco Notepad</b>!</p><p>Try formatting:</p><ul><li><i>Italic text</i></li><li><u>Underlined text</u></li><li><b>Bold text</b></li></ul><p>All buttons now work! ✅</p>' },
+                { id: 2, title: 'Ideas', content: '<p>💡 Your ideas go here...</p>' },
+                { id: 3, title: 'Shopping List', content: '<ul><li>Milk</li><li>Eggs</li><li>Bread</li></ul>' }
+            ];
+            let currentNoteId = 1;
+
+            // ✅ Helper: Apply formatting command
+            function format(command, value = null) {
+                // Ensure focus
+                noteContent.focus();
+                // Modern execCommand (still works for basic formatting in editable divs)
+                document.execCommand(command, false, value);
+                updateCharCount();
+            }
+
+            // ✅ Helper: Toggle button active state
+            function toggleActive(btn, isActive) {
+                if (isActive) btn.classList.add('active');
+                else btn.classList.remove('active');
+            }
+
+            // ✅ Update toolbar button states (e.g., bold/italic active)
+            function updateToolbar() {
+                try {
+                    // Only works when selection exists
+                    toggleActive(boldBtn, document.queryCommandState('bold'));
+                    toggleActive(italicBtn, document.queryCommandState('italic'));
+                    toggleActive(underlineBtn, document.queryCommandState('underline'));
+                } catch (e) {
+                    // Safe fallback
+                }
+            }
+
+            // ✅ Render notes
+            function renderNotes() {
+                noteList.innerHTML = '';
+                noteCountEl.textContent = `${notes.length} ${notes.length === 1 ? 'note' : 'notes'}`;
+                notes.forEach(note => {
+                    const li = document.createElement('li');
+                    li.className = 'note-item' + (note.id === currentNoteId ? ' active' : '');
+                    li.innerHTML = `<i class="fas fa-sticky-note"></i> <span>${note.title || 'Untitled'}</span>`;
+                    li.onclick = () => loadNote(note.id);
+                    noteList.appendChild(li);
+                });
+            }
+
+            // ✅ Load note
+            function loadNote(id) {
+                const note = notes.find(n => n.id === id);
+                if (note) {
+                    noteTitle.value = note.title;
+                    noteContent.innerHTML = note.content || '<p><br></p>';
+                    currentNoteId = id;
+                    renderNotes();
+                    updateCharCount();
+                    // Focus for immediate editing
+                    setTimeout(() => noteContent.focus(), 50);
+                }
+            }
+
+            // ✅ Save note
+            function saveNote() {
+                const note = notes.find(n => n.id === currentNoteId);
+                if (note) {
+                    note.title = noteTitle.value || 'Untitled Note';
+                    note.content = noteContent.innerHTML;
+                    showToast('Note saved! 💾', 'success');
+                    const now = new Date();
+                    lastSaved.textContent = `Saved at ${now.toLocaleTimeString([], { hour12: false, hour: '2-digit', minute: '2-digit' })}`;
+                }
+            }
+
+            // ✅ Character count (text only)
+            function updateCharCount() {
+                const text = noteContent.textContent || '';
+                const len = text.length;
+                charCount.textContent = `${len} ${len === 1 ? 'character' : 'characters'}`;
+            }
+
+            // ✅ Toast
+            function showToast(msg, type = 'success') {
+                toastMessage.textContent = msg;
+                toast.className = `toast toast-${type} show`;
+                setTimeout(() => toast.classList.remove('show'), 3000);
+            }
+
+            // ✅ Create note
+            function createNote() {
+                const newId = Math.max(...notes.map(n => n.id), 0) + 1;
+                const newNote = { id: newId, title: 'Untitled Note', content: '<p><br></p>' };
+                notes.push(newNote);
+                renderNotes();
+                loadNote(newId);
+                noteTitle.focus();
+                showToast('New note created!', 'info');
+            }
+
+            // ✅ Modal control
+            function showModal(modal) { modal.classList.add('active'); }
+            function hideModal(modal) { modal.classList.remove('active'); }
+
+            // ✅ Event bindings
+            loginBtn?.addEventListener('click', () => showModal(loginModal));
+            signupBtn?.addEventListener('click', () => showModal(signupModal));
+            closeLogin?.addEventListener('click', () => hideModal(loginModal));
+            closeSignup?.addEventListener('click', () => hideModal(signupModal));
+            switchToSignup?.addEventListener('click', (e) => { e.preventDefault(); hideModal(loginModal); showModal(signupModal); });
+            switchToLogin?.addEventListener('click', (e) => { e.preventDefault(); hideModal(signupModal); showModal(loginModal); });
+
+            loginForm?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const email = document.getElementById('loginEmail')?.value || '';
+                if (email) {
+                    showToast(`Welcome back, ${email.split('@')[0]}! 🎉`, 'success');
+                    hideModal(loginModal);
+                }
+            });
+
+            signupForm?.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const name = document.getElementById('signupName')?.value || 'Friend';
+                showToast(`Account created, ${name}! ✨`, 'success');
+                hideModal(signupModal);
+            });
+
+            newNoteBtn?.addEventListener('click', createNote);
+            boldBtn?.addEventListener('click', () => format('bold'));
+            italicBtn?.addEventListener('click', () => format('italic'));
+            underlineBtn?.addEventListener('click', () => format('underline'));
+            bulletBtn?.addEventListener('click', () => format('insertUnorderedList'));
+            saveBtn?.addEventListener('click', saveNote);
+
+            // Real-time updates
+            noteContent?.addEventListener('input', () => {
+                updateCharCount();
+                updateToolbar();
+            });
+
+            noteTitle?.addEventListener('input', () => {
+                setTimeout(saveNote, 800); // debounce
+            });
+
+            // Keyboard shortcuts
+            document.addEventListener('keydown', (e) => {
+                if (e.ctrlKey || e.metaKey) {
+                    if (e.key === 'b') { e.preventDefault(); format('bold'); }
+                    if (e.key === 'i') { e.preventDefault(); format('italic'); }
+                    if (e.key === 'u') { e.preventDefault(); format('underline'); }
+                    if (e.key === 's') { e.preventDefault(); saveNote(); }
+                    if (e.key === 'n') { e.preventDefault(); createNote(); }
+                }
+            });
+
+            // Close modals on outside click
+            [loginModal, signupModal].forEach(modal => {
+                modal?.addEventListener('click', (e) => {
+                    if (e.target === modal) hideModal(modal);
+                });
+            });
+
+            // ✅ Initialize
+            renderNotes();
+            loadNote(currentNoteId);
+            noteContent.addEventListener('mouseup', updateToolbar);
+            noteContent.addEventListener('keyup', updateToolbar);
+            showToast('✅ Formatting enabled! Try Ctrl+B, Ctrl+I, Ctrl+U, or toolbar buttons.', 'info');
+        });
+    </script>
+</body>
+</html>
+
